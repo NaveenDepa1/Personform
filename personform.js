@@ -1,110 +1,152 @@
-import React, { useState } from 'react';
-import { TextField, Button, Select, MenuItem, Box, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Button, Select, MenuItem } from '@mui/material';
 
-function App() {
-  const [persons, setPersons] = useState([]);
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
-  const [expense, setExpense] = useState('');
-  const [amount, setAmount] = useState('');
-  const [owingStatus, setOwingStatus] = useState('I owe');
+function PersonForm() {
+  const [personData, setPersonData] = useState([]);
+  const [selectedPerson, setSelectedPerson] = useState(null);
 
-  const addPerson = () => {
-    const newPerson = {
-      name: name,
-      username: username,
-      expense: expense,
-      amount: amount,
-      status: owingStatus,
-    };
-    setPersons([...persons, newPerson]);
-    setName('');
-    setUsername('');
-    setExpense('');
-    setAmount('');
-    setOwingStatus('I owe'); // Reset owing status after adding
-  };
+  useEffect(() => {
+    fetch('./data/persons.json')
+      .then(response => response.json())
+      .then(data => setPersonData(data))
+      .catch(error => console.error('Error fetching data:', error));
+  }, []);
 
-  const deletePerson = (index) => {
-    const updatedPersons = [...persons];
-    updatedPersons.splice(index, 1);
-    setPersons(updatedPersons);
+  const Header = () => {
+    return (
+        <header className="header" >
+            <Typography variant="h4" align="center">Expense Tracker</Typography>
+        </header>
+    );
+};
+
+const Footer = () => {
+    return (
+        <footer className="footer">
+            <Typography variant="body2" align="center">&copy; 2024 Expense Tracker. All rights reserved.</Typography>
+        </footer>
+    );
+};
+  const handleSelectPerson = (event) => {
+    const selectedId = event.target.value;
+    const person = personData.find(person => person.id === selectedId);
+    setSelectedPerson(person);
   };
 
   return (
+    <>
+        <Header />
     <Box
       sx={{
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
         justifyContent: 'center',
-        height: '100vh',
+        alignItems: 'center',
+        flexDirection: 'column',
         backgroundColor: 'rgb(204 255 255)',
+        padding: '20px',
       }}
     >
-      <Typography variant="h4" gutterBottom>
-        Add Person
+      <Typography variant="h5" gutterBottom>
+        Select a Person:
       </Typography>
-      <TextField
-        label="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        variant="outlined"
-        margin="normal"
-      />
-      <TextField
-        label="User Name"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        variant="outlined"
-        margin="normal"
-      />
-      <TextField
-        label="Expense"
-        value={expense}
-        onChange={(e) => setExpense(e.target.value)}
-        variant="outlined"
-        margin="normal"
-      />
-      <TextField
-        label="Amount"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        variant="outlined"
-        margin="normal"
-        type="number"
-      />
       <Select
-        value={owingStatus}
-        onChange={(e) => setOwingStatus(e.target.value)}
+        value={selectedPerson ? selectedPerson.id : ''}
+        onChange={handleSelectPerson}
         variant="outlined"
         margin="normal"
+        style={{ width: '200px', marginBottom: '20px' }}
       >
-        <MenuItem value="I owe">I owe</MenuItem>
-        <MenuItem value="They owe me">They owe me</MenuItem>
-        <MenuItem value="Split equally">Split equally</MenuItem>
-      </Select>
-      <Button variant="contained" onClick={addPerson}>
-        Add Person
-      </Button>
-
-      <Typography variant="h4" gutterBottom>
-        Added Persons
-      </Typography>
-      <Box>
-        {persons.map((person, index) => (
-          <Box key={index} sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="body1">
-              {person.username} {person.expense} {person.status} ${person.amount}
-            </Typography>
-            <Button variant="contained" onClick={() => deletePerson(index)}>
-              Delete
-            </Button>
-          </Box>
+        {personData.map(person => (
+          <MenuItem key={person.id} value={person.id}>
+            {person.name}
+          </MenuItem>
         ))}
-      </Box>
+      </Select>
+      {selectedPerson && (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+          }}
+        >
+          <Box
+            sx={{
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              padding: '10px',
+              margin: '10px',
+              maxWidth: '200px',
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              ID: {selectedPerson.id}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              padding: '10px',
+              margin: '10px',
+              maxWidth: '200px',
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Name: {selectedPerson.name}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              padding: '10px',
+              margin: '10px',
+              maxWidth: '200px',
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              User Name: {selectedPerson.user_name}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              padding: '10px',
+              margin: '10px',
+              maxWidth: '200px',
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Password: {selectedPerson.pwd}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              padding: '10px',
+              margin: '10px',
+              maxWidth: '200px',
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Expenses:
+            </Typography>
+            {selectedPerson.expenses.map((expense, index) => (
+              <Typography key={index} variant="body1">
+                {/* Render individual expense details here */}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+      )}
     </Box>
+    <Footer />
+    </>
   );
 }
 
-export default App;
+export default PersonForm;
